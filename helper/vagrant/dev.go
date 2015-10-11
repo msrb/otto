@@ -92,7 +92,14 @@ func (opts *DevOptions) actionDestroy(rctx router.Context) error {
 
 	ctx.Ui.Header("Destroying the local development environment...")
 
-	if err := opts.vagrant(ctx).Execute("destroy", "-f"); err != nil {
+	vagrant := opts.vagrant(ctx)
+	if opts.Layer != nil {
+		if err := opts.Layer.RemoveEnv(vagrant); err != nil {
+			return fmt.Errorf(
+				"Error preparing dev environment: %s", err)
+		}
+	}
+	if err := vagrant.Execute("destroy", "-f"); err != nil {
 		return err
 	}
 	ctx.Ui.Raw("\n")
